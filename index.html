@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b0e14">
+<title>OG Tracker</title>
+<style>
+:root{--bg:#0b0e14;--card:#151a24;--card2:#1c2330;--line:#27303f;--txt:#e6ebf2;--mut:#8b97a8;--acc:#46d18a;--warn:#f0b232;--bad:#e5564b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--txt);padding-bottom:80px}
+header{position:sticky;top:0;background:rgba(11,14,20,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 16px;z-index:10}
+h1{font-size:17px;margin:0;font-weight:600}
+.sub{font-size:12px;color:var(--mut);margin-top:2px}
+.wrap{padding:14px 14px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.row{display:flex;gap:8px;align-items:center}
+.between{justify-content:space-between}
+.daytitle{font-size:16px;font-weight:600}
+.focus{font-size:12px;color:var(--acc);margin-top:2px}
+.skill{background:var(--card2);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:13px;border-left:3px solid var(--warn)}
+.skill b{color:var(--warn)}
+.ex{border-top:1px solid var(--line);padding:11px 0}
+.ex:first-of-type{border-top:none}
+.exname{font-size:14px;font-weight:600}
+.exmeta{font-size:12px;color:var(--mut);margin-top:1px}
+.inputs{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+input,select{background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px;font-size:15px;width:100%}
+.fld{flex:1;min-width:62px}
+.fld label{display:block;font-size:10px;color:var(--mut);margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
+.last{font-size:11px;color:var(--acc);margin-top:5px}
+button{background:var(--acc);color:#05140c;border:none;border-radius:10px;padding:12px;font-size:15px;font-weight:600;width:100%;cursor:pointer}
+button.sec{background:var(--card2);color:var(--txt);border:1px solid var(--line)}
+button.sm{padding:8px 12px;font-size:13px;width:auto}
+.nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);z-index:10}
+.nav div{flex:1;text-align:center;padding:11px 4px;font-size:11px;color:var(--mut);cursor:pointer}
+.nav div.on{color:var(--acc)}
+.nav .ic{font-size:19px;display:block}
+.daypick{display:flex;gap:5px;overflow-x:auto;padding-bottom:6px;margin-bottom:4px}
+.daypick button{flex:0 0 auto;width:auto;padding:8px 11px;font-size:13px;background:var(--card2);color:var(--mut);border:1px solid var(--line)}
+.daypick button.on{background:var(--acc);color:#05140c;border-color:var(--acc)}
+.stat{display:flex;gap:10px}
+.statbox{flex:1;background:var(--card2);border-radius:10px;padding:10px;text-align:center}
+.statbox .n{font-size:20px;font-weight:700}
+.statbox .l{font-size:10px;color:var(--mut);text-transform:uppercase;margin-top:2px}
+.hist{font-size:12px;border-top:1px solid var(--line);padding:8px 0;color:var(--mut)}
+.hist b{color:var(--txt)}
+.pill{display:inline-block;background:var(--card2);border-radius:20px;padding:3px 10px;font-size:11px;margin:2px 3px 0 0;color:var(--mut)}
+.macro{display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.macro:first-child{border-top:none}
+.macro b{color:var(--acc)}
+.phase{font-size:11px;padding:3px 9px;border-radius:20px;background:var(--card2);color:var(--warn)}
+.deload{background:var(--bad);color:#fff;border-radius:10px;padding:10px;font-size:13px;margin-bottom:10px;text-align:center;font-weight:600}
+.tiny{font-size:11px;color:var(--mut);margin-top:6px;line-height:1.5}
+a{color:var(--acc)}
+.done{color:var(--acc);font-size:12px;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <div class="row between">
+    <div><h1>Overcoming Gravity</h1><div class="sub" id="subhdr">12-week plan · 6 days/wk</div></div>
+    <span class="phase" id="phasetag">Wk 1</span>
+  </div>
+</header>
+
+<div id="view-train" class="wrap"></div>
+<div id="view-progress" class="wrap" style="display:none"></div>
+<div id="view-plan" class="wrap" style="display:none"></div>
+
+<div class="nav">
+  <div class="on" data-v="train"><span class="ic">🏋️</span>Train</div>
+  <div data-v="progress"><span class="ic">📈</span>Progress</div>
+  <div data-v="plan"><span class="ic">📋</span>Plan</div>
+</div>
+
+<script>
+// ---------- PLAN DATA (grounded in the book + your 12-wk plan) ----------
+const PLAN = {
+  Mon:{focus:"Upper A · Push-emphasis",skill:"<b>Handstand</b> wall→freestanding · 5–10 min · locked arms, posterior pelvic tilt · goal hold 30s+ (never to failure)",ex:[
+    {n:"Weighted dip",s:"4×5→8",r:"90s paired",note:"elbows tucked, full ROM"},
+    {n:"Weighted pull-up",s:"4×5→8",r:"90s paired",note:"scap pull first"},
+    {n:"Overhead barbell press",s:"3×5→8",r:"90s"},
+    {n:"Chest-supported / ring row",s:"3×8→12",r:"90s",note:"structural balance"},
+    {n:"L-sit",s:"60s total",r:"—",note:"many sets, not to failure"},
+    {n:"Cuban press / band ext rotation",s:"2×12",r:"60s",note:"prehab"}]},
+  Tue:{focus:"Lower A · Strength",skill:"<b>Press-to-HS</b> straight-arm straddle eccentrics (wall) · 4×15s · hardest L5 skill",ex:[
+    {n:"Back squat",s:"4×5",r:"3 min"},
+    {n:"Romanian deadlift",s:"3×6→8",r:"2–3 min"},
+    {n:"Bulgarian split squat",s:"3×8/leg",r:"90s paired"},
+    {n:"Hanging leg raise + compression",s:"3×8 + 3×10s",r:"90s",note:"feeds V-sit"},
+    {n:"Standing calf raise",s:"3×12",r:"60s"}]},
+  Wed:{focus:"Upper B · Pull-emphasis",skill:"<b>V-sit / L-sit line</b> · tuck→straddle-L→45° V-sit · 10 min · 50/50 holds vs compression · every +30°≈2× harder",ex:[
+    {n:"Weighted pull-up (alt grip)",s:"4×5→8",r:"90s paired"},
+    {n:"Pseudo-planche pushup",s:"4×6→10",r:"90s paired",note:"planche prep"},
+    {n:"Barbell bent-over row",s:"3×6→10",r:"90s"},
+    {n:"Incline DB / ring pushup",s:"3×8→12",r:"90s"},
+    {n:"Face pulls + ext rotation",s:"2×15",r:"60s",note:"cuff/rear delt"}]},
+  Thu:{focus:"Athletic + Conditioning",skill:"<b>Freestanding handstand</b> + shoulder taps · 10–15 min · balance focus, GTG style",ex:[
+    {n:"Power clean OR box jump",s:"5×3",r:"2–3 min",note:"explosive, fast intent"},
+    {n:"Loaded carry (farmer/front)",s:"4×40m",r:"90s"},
+    {n:"Intervals (row/bike/sled)",s:"8–10×30s on/90s off",r:"—",note:"fat loss"},
+    {n:"Easy walk + breathing",s:"5 min",r:"—",note:"low CNS cost"}]},
+  Fri:{focus:"Lower B · Hypertrophy/Athletic",skill:"<b>Press-to-HS</b> bent-arm bent-body (pike/straddle) · 10 min · never bend elbow >90°",ex:[
+    {n:"Front squat OR leg press",s:"4×8→12",r:"2–3 min"},
+    {n:"Deadlift (conv/trap-bar)",s:"3×5",r:"3 min"},
+    {n:"Walking lunge",s:"3×10/leg",r:"90s paired"},
+    {n:"Nordic / ham curl",s:"3×6→10",r:"90s paired"},
+    {n:"Hanging knee-to-elbow compression",s:"3×8",r:"60s",note:"V-sit feeder"}]},
+  Sat:{focus:"Upper C · Arms/Shoulders + Skill",skill:"<b>Handstand walking</b> / hands-close / shoulder taps · 10–15 min · skill density day",ex:[
+    {n:"Ring dip",s:"4×6→10",r:"90s paired"},
+    {n:"Chin-up (supinated)",s:"4×6→10",r:"90s paired",note:"biceps via compound"},
+    {n:"Pike / box HSPU",s:"3×5→8",r:"90s paired",note:"toward freestanding HSPU"},
+    {n:"Inverted row (feet elevated)",s:"3×8→12",r:"90s"},
+    {n:"Curls + triceps",s:"2×10",r:"60s",note:"only direct arm work"}]},
+  Sun:{focus:"REST",skill:"Mobility + 10-min breathing only · walk / soft tissue",ex:[]}
+};
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const WARMUP="10–20 burpees / 60s row · wrist+shoulder+squat circles 15× · 60s support hold · 5× skin-the-cat · 30–60s plank/side plank/hollow/arch";
+const COOLDOWN="3–5×30s splits · 3–5×30s German hang · 3–5×20s back bridge · 1 min 4-7-8 breathing · rice-bucket wrists after skill days";
+const MACROS={kcal:2400,protein:"165–175 g",fat:"~70 g",carbs:"~270 g",extra:"Creatine 5g/day · protein in ~30g × 5–6 meals · ~400 kcal deficit"};
+
+// ---------- STATE ----------
+const KEY="ogtracker_v1";
+let DB=JSON.parse(localStorage.getItem(KEY)||'{"start":null,"logs":[],"sleep":{},"bw":{}}');
+if(!DB.start){DB.start=todayISO();save();}
+function save(){localStorage.setItem(KEY,JSON.stringify(DB));}
+function todayISO(){return new Date().toISOString().slice(0,10);}
+function weekNum(){const d=(new Date(todayISO())-new Date(DB.start))/86400000;return Math.max(1,Math.floor(d/7)+1);}
+function phaseLabel(w){if(w===4||w===8)return"DELOAD wk";if(w<=4)return"Accumulation";if(w<=8)return"Intensification";return"Peak/Skill";}
+function lastLog(day,ex){const m=DB.logs.filter(l=>l.day===day&&l.ex===ex);return m.length?m[m.length-1]:null;}
+
+// ---------- RENDER: TRAIN ----------
+let selDay=DAYS[new Date().getDay()];
+function renderTrain(){
+  const w=weekNum();
+  document.getElementById("phasetag").textContent="Wk "+(w>12?"12+":w);
+  document.getElementById("subhdr").textContent=phaseLabel(w)+" · "+todayISO();
+  const v=document.getElementById("view-train");
+  let h='<div class="daypick">'+DAYS.slice(1).concat(["Sun"]).map(d=>`<button class="${d===selDay?'on':''}" onclick="setDay('${d}')">${d}</button>`).join("")+'</div>';
+  const P=PLAN[selDay];
+  if((w===4||w===8))h+='<div class="deload">⚠️ DELOAD WEEK — 2 days only, 1 exercise/category, 1–2 sets not-to-failure. Max-test big lifts end of week.</div>';
+  h+=`<div class="card"><div class="row between"><div class="daytitle">${selDay}</div></div><div class="focus">${P.focus}</div></div>`;
+  if(selDay==="Sun"){h+=`<div class="card"><div class="skill">${P.skill}</div></div>`;v.innerHTML=h;return;}
+  h+=`<div class="card"><div class="exmeta" style="margin-bottom:6px">▶ WARM-UP (~10 min)</div><div class="tiny">${WARMUP}</div></div>`;
+  h+=`<div class="card"><div class="skill">🎯 SKILL FIRST: ${P.skill}</div>`;
+  P.ex.forEach((e,i)=>{
+    const L=lastLog(selDay,e.n);
+    const lh=L?`<div class="last">last: ${L.load||'-'}kg · ${L.reps||'-'} · RPE ${L.rpe||'-'}</div>`:"";
+    h+=`<div class="ex"><div class="exname">${e.n}</div><div class="exmeta">${e.s} · rest ${e.r}${e.note?' · '+e.note:''}</div>${lh}
+      <div class="inputs">
+        <div class="fld"><label>Load kg</label><input inputmode="decimal" id="ld_${i}" value="${L?L.load||'':''}"></div>
+        <div class="fld"><label>Reps</label><input id="rp_${i}" placeholder="8/8/7" value=""></div>
+        <div class="fld"><label>RPE</label><input inputmode="decimal" id="rpe_${i}" placeholder="8" value=""></div>
+      </div></div>`;
+  });
+  h+=`</div><div class="card"><div class="exmeta" style="margin-bottom:6px">▼ COOL-DOWN</div><div class="tiny">${COOLDOWN}</div></div>`;
+  h+=`<button onclick="saveDay()">Save ${selDay} session</button><div id="saved" class="tiny" style="text-align:center"></div>`;
+  v.innerHTML=h;
+}
+function setDay(d){selDay=d;renderTrain();}
+function saveDay(){
+  const P=PLAN[selDay];let n=0;
+  P.ex.forEach((e,i)=>{
+    const load=document.getElementById("ld_"+i).value.trim();
+    const reps=document.getElementById("rp_"+i).value.trim();
+    const rpe=document.getElementById("rpe_"+i).value.trim();
+    if(load||reps||rpe){DB.logs.push({date:todayISO(),week:weekNum(),day:selDay,ex:e.n,load,reps,rpe});n++;}
+  });
+  save();
+  document.getElementById("saved").textContent=n?`✓ Saved ${n} exercises`:"Nothing entered";
+  setTimeout(renderTrain,700);
+}
+
+// ---------- RENDER: PROGRESS ----------
+function renderProgress(){
+  const v=document.getElementById("view-progress");
+  const w=weekNum();const sessions=new Set(DB.logs.map(l=>l.date+l.day)).size;
+  let h=`<div class="card"><div class="stat">
+    <div class="statbox"><div class="n">${w>12?'12+':w}</div><div class="l">Week</div></div>
+    <div class="statbox"><div class="n">${sessions}</div><div class="l">Sessions</div></div>
+    <div class="statbox"><div class="n">${DB.logs.length}</div><div class="l">Logged sets</div></div>
+  </div><div class="tiny" style="text-align:center;margin-top:8px">${phaseLabel(w)} · started ${DB.start}</div></div>`;
+  // daily log inputs
+  h+=`<div class="card"><div class="exmeta" style="margin-bottom:8px">TODAY'S RECOVERY</div>
+    <div class="inputs">
+      <div class="fld"><label>Sleep h</label><input inputmode="decimal" id="slp" value="${DB.sleep[todayISO()]||''}"></div>
+      <div class="fld"><label>Bodyweight kg</label><input inputmode="decimal" id="bw" value="${DB.bw[todayISO()]||''}"></div>
+    </div><button class="sec sm" style="margin-top:8px;width:100%" onclick="saveRecovery()">Save recovery</button>
+    <div class="tiny">Target: sleep ≥7.5h · BW trending down ~0.3–0.4kg/wk</div></div>`;
+  // per-exercise progress (best load history)
+  const exs=[...new Set(DB.logs.map(l=>l.ex))];
+  if(exs.length){
+    h+=`<div class="card"><div class="exmeta" style="margin-bottom:6px">LIFT HISTORY (last 3)</div>`;
+    exs.forEach(ex=>{
+      const m=DB.logs.filter(l=>l.ex===ex).slice(-3);
+      h+=`<div class="hist"><b>${ex}</b><br>`+m.map(l=>`<span class="pill">${l.date.slice(5)} · ${l.load||'-'}kg ${l.reps||''} R${l.rpe||'-'}</span>`).join("")+`</div>`;
+    });
+    h+=`</div>`;
+  }
+  h+=`<div class="card"><div class="exmeta" style="margin-bottom:6px">PROGRESSION RULES</div><div class="tiny">
+    • Hit top of rep range on all sets w/ ~1 in reserve → +2.5–5kg, reset to bottom.<br>
+    • Strength moves 5→8, hypertrophy 8→12.<br>
+    • Skills: Grease-the-Groove, never to failure. Milestones: 30s wall HS → freestanding; 45°→75°→100° V-sit.<br>
+    • <b>Deload W4 & W8</b> or any week reps fall while RPE hits 10.<br>
+    • Max-test big lifts end of deload, 1 rest day before next block.</div></div>`;
+  h+=`<button class="sec" onclick="exportCSV()">⬇ Export CSV</button>`;
+  v.innerHTML=h;
+}
+function saveRecovery(){
+  const s=document.getElementById("slp").value.trim();const b=document.getElementById("bw").value.trim();
+  if(s)DB.sleep[todayISO()]=s;if(b)DB.bw[todayISO()]=b;save();renderProgress();
+}
+function exportCSV(){
+  let rows=[["date","week","day","exercise","load_kg","reps","rpe"]];
+  DB.logs.forEach(l=>rows.push([l.date,l.week,l.day,l.ex,l.load,l.reps,l.rpe]));
+  rows.push([]);rows.push(["date","sleep_h","bodyweight_kg"]);
+  const keys=new Set([...Object.keys(DB.sleep),...Object.keys(DB.bw)]);
+  [...keys].sort().forEach(d=>rows.push([d,DB.sleep[d]||"",DB.bw[d]||""]));
+  const csv=rows.map(r=>r.join(",")).join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.download="og-tracker-"+todayISO()+".csv";a.click();
+}
+
+// ---------- RENDER: PLAN ----------
+function renderPlan(){
+  const v=document.getElementById("view-plan");
+  let h=`<div class="card"><div class="exmeta" style="margin-bottom:8px">DAILY NUTRITION (80kg · 17% · fat-loss+muscle)</div>
+    <div class="macro"><span>Calories</span><b>${MACROS.kcal} kcal</b></div>
+    <div class="macro"><span>Protein</span><b>${MACROS.protein}</b></div>
+    <div class="macro"><span>Fat</span><b>${MACROS.fat}</b></div>
+    <div class="macro"><span>Carbs</span><b>${MACROS.carbs}</b></div>
+    <div class="tiny">${MACROS.extra}</div></div>`;
+  h+=`<div class="card"><div class="exmeta" style="margin-bottom:8px">12-WEEK SHAPE</div><div class="tiny">
+    <b>W1–4 Accumulation</b> — higher volume, build skill base. Deload W4.<br>
+    <b>W5–8 Intensification</b> — strength moves toward 3–5 reps heavier. Deload W8.<br>
+    <b>W9–12 Peak/Skill</b> — chase skill milestones + max-test big lifts. Reassess W12.</div></div>`;
+  DAYS.slice(1).concat(["Sun"]).forEach(d=>{
+    const P=PLAN[d];
+    h+=`<div class="card"><div class="daytitle">${d}</div><div class="focus">${P.focus}</div>
+      <div class="skill" style="margin-top:8px">${P.skill}</div>`;
+    P.ex.forEach(e=>h+=`<div class="ex"><div class="exname">${e.n}</div><div class="exmeta">${e.s} · rest ${e.r}${e.note?' · '+e.note:''}</div></div>`);
+    h+=`</div>`;
+  });
+  h+=`<div class="card"><div class="exmeta">RESET</div><button class="sec" style="margin-top:8px" onclick="resetStart()">Set today as Week 1 start</button>
+    <button class="sec" style="margin-top:8px;color:#e5564b" onclick="wipe()">Erase all data</button></div>`;
+  v.innerHTML=h;
+}
+function resetStart(){if(confirm("Set today as Week 1 day 1?")){DB.start=todayISO();save();renderTrain();renderPlan();}}
+function wipe(){if(confirm("Erase ALL logged data? Cannot undo.")){localStorage.removeItem(KEY);location.reload();}}
+
+// ---------- NAV ----------
+document.querySelectorAll(".nav div").forEach(n=>n.onclick=()=>{
+  document.querySelectorAll(".nav div").forEach(x=>x.classList.remove("on"));n.classList.add("on");
+  ["train","progress","plan"].forEach(v=>document.getElementById("view-"+v).style.display="none");
+  const v=n.dataset.v;document.getElementById("view-"+v).style.display="block";
+  if(v==="train")renderTrain();if(v==="progress")renderProgress();if(v==="plan")renderPlan();
+});
+renderTrain();
+</script>
+</body>
+</html>
