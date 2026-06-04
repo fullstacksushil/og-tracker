@@ -6,6 +6,9 @@
 <meta name="theme-color" content="#0b0e14">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="OG Tracker">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
 <title>OG Tracker</title>
 <style>
 :root{--bg:#0b0e14;--card:#151a24;--card2:#1c2330;--line:#27303f;--txt:#e6ebf2;--mut:#8b97a8;--acc:#46d18a;--acc2:#2e8f5e;--warn:#f0b232;--bad:#e5564b;--saf:env(safe-area-inset-bottom,0px)}
@@ -145,13 +148,20 @@ const PLAN = {
     {n:"Chest-supported / ring row",s:"3×8→12",sets:3,rest:90,note:"structural balance"},
     {n:"L-sit",s:"60s total",sets:3,rest:60,note:"many sets, not to failure"},
     {n:"Cuban press / band ext rotation",s:"2×12",sets:2,rest:60,note:"prehab"}]},
-  Tue:{focus:"Lower A · Strength",skill:"<b>Press-to-HS</b> straight-arm straddle eccentrics (wall) · 4×15s · hardest L5 skill",ex:[
-    {n:"Back squat",s:"4×5",sets:4,rest:180},
-    {n:"Romanian deadlift",s:"3×6→8",sets:3,rest:150},
-    {n:"Bulgarian split squat",s:"3×8/leg",sets:3,rest:90},
+  Tue:{focus:"Lower A · Heavy bilateral (alternates weekly)",skill:"<b>Handstand</b> freestanding holds · GTG submax · 5–10 min · never to failure · goal 30s+",alt:{
+    odd:[
+    {n:"Back squat",s:"1 ramp + 3×5",sets:4,rest:180,note:"the week's ONE heavy axial lift"},
+    {n:"Leg press / hack squat",s:"3×8→12",sets:3,rest:90,note:"quad volume, no spinal load"},
     {n:"Hanging leg raise + compression",s:"3×8 + 3×10s",sets:3,rest:90,note:"feeds V-sit"},
-    {n:"Standing calf raise",s:"3×12",sets:3,rest:60}]},
-  Wed:{focus:"Upper B · Pull-emphasis",skill:"<b>V-sit / L-sit line</b> · tuck→straddle-L→45° V-sit · 10 min · 50/50 holds vs compression · every +30°≈2× harder",ex:[
+    {n:"Seated / lying leg curl",s:"3×8→12",sets:3,rest:75,note:"hamstring, spine-friendly"},
+    {n:"Standing calf raise",s:"3×12",sets:3,rest:60}],
+    even:[
+    {n:"Deadlift (conv / trap-bar)",s:"1 ramp + 3×4",sets:4,rest:180,note:"the week's ONE heavy axial lift"},
+    {n:"Bulgarian split squat",s:"3×8/leg",sets:3,rest:90,note:"unilateral, low spinal cost"},
+    {n:"Hanging leg raise + compression",s:"3×8 + 3×10s",sets:3,rest:90,note:"feeds V-sit"},
+    {n:"Leg extension",s:"3×10→15",sets:3,rest:75,note:"quad volume, spine-friendly"},
+    {n:"Standing calf raise",s:"3×12",sets:3,rest:60}]}},
+  Wed:{focus:"Upper B · Pull-emphasis",skill:"<b>L-sit → straddle-L → V-sit line</b> · tuck→straddle-L→45° V-sit · 10 min · 50/50 holds vs compression · every +30°≈2× harder",ex:[
     {n:"Weighted pull-up (alt grip)",s:"4×5→8",sets:4,rest:90},
     {n:"Pseudo-planche pushup",s:"4×6→10",sets:4,rest:90,note:"planche prep"},
     {n:"Barbell bent-over row",s:"3×6→10",sets:3,rest:120},
@@ -162,11 +172,12 @@ const PLAN = {
     {n:"Loaded carry (farmer/front)",s:"4×40m",sets:4,rest:90},
     {n:"Intervals (row/bike/sled)",s:"8–10×30s on/90s off",sets:1,rest:90,note:"fat loss"},
     {n:"Easy walk + breathing",s:"5 min",sets:1,rest:0,note:"low CNS cost"}]},
-  Fri:{focus:"Lower B · Hypertrophy/Athletic",skill:"<b>Press-to-HS</b> bent-arm bent-body (pike/straddle) · 10 min · never bend elbow >90°",ex:[
-    {n:"Front squat OR leg press",s:"4×8→12",sets:4,rest:150},
-    {n:"Deadlift (conv/trap-bar)",s:"3×5",sets:3,rest:180},
-    {n:"Walking lunge",s:"3×10/leg",sets:3,rest:90},
-    {n:"Nordic / ham curl",s:"3×6→10",sets:3,rest:90},
+  Fri:{focus:"Lower B · Hypertrophy/Athletic · spine-friendly (no heavy axial)",skill:"<b>L-sit / V-sit compression</b> · 10 min · 50/50 holds vs active compression",ex:[
+    {n:"Box jump / broad jump",s:"5×3",sets:5,rest:120,note:"explosive, low CNS cost"},
+    {n:"Leg press / FFE split squat",s:"4×8→12",sets:4,rest:120,note:"quad, no spinal load"},
+    {n:"Walking lunge (DBs)",s:"3×10/leg",sets:3,rest:90,note:"unilateral"},
+    {n:"Nordic curl / glute-ham raise",s:"3×6→10",sets:3,rest:90,note:"hamstring health"},
+    {n:"Single-leg RDL / back extension",s:"3×10",sets:3,rest:75,note:"posterior chain, minimal axial"},
     {n:"Hanging knee-to-elbow compression",s:"3×8",sets:3,rest:60,note:"V-sit feeder"}]},
   Sat:{focus:"Upper C · Arms/Shoulders + Skill",skill:"<b>Handstand walking</b> / hands-close / shoulder taps · 10–15 min · skill density day",ex:[
     {n:"Ring dip",s:"4×6→10",sets:4,rest:90},
@@ -202,7 +213,9 @@ save();
 function save(){localStorage.setItem(KEY,JSON.stringify(DB));}
 function todayISO(){return new Date().toISOString().slice(0,10);}
 function weekNum(){const d=(new Date(todayISO())-new Date(DB.start))/86400000;return Math.max(1,Math.floor(d/7)+1);}
-function phaseLabel(w){if(w===4||w===8)return"DELOAD wk";if(w<=4)return"Accumulation";if(w<=8)return"Intensification";if(w<=12)return"Peak/Skill";return"Reassess";}
+function exOf(day,w){const P=PLAN[day];if(P.alt){return (((w||weekNum())%2)===1)?P.alt.odd:P.alt.even;}return P.ex||[];}
+function tueVariant(w){return (((w||weekNum())%2)===1)?"Squat focus (odd wk)":"Deadlift focus (even wk)";}
+function phaseLabel(w){if(w===4||w===8)return"DELOAD wk";if(w<=8)return"Fat-loss · lifts on MAINTENANCE";if(w<=12)return"Fed Peak · push PRs";return"Reassess";}
 function lastLog(day,ex){const m=DB.logs.filter(l=>l.day===day&&l.ex===ex);return m.length?m[m.length-1]:null;}
 function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms||12);}catch(e){}}
 function toast(t){const el=document.getElementById("toast");el.textContent=t;el.classList.add("show");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),1600);}
@@ -230,15 +243,15 @@ function renderTrain(){
     const done=loggedToday(d)?'<span class="dot"></span>':'';
     return `<button class="${d===selDay?'on':''} ${t}" onclick="setDay('${d}')">${d}${done}</button>`;
   }).join("")+'</div>';
-  const P=PLAN[selDay];
+  const P=PLAN[selDay];const PEX=exOf(selDay,w);
   if(w===4||w===8)h+='<div class="deload">⚠️ DELOAD WEEK<br>2 days only · 1 exercise/category · 1–2 sets not-to-failure · max-test big lifts end of week</div>';
   const doneToday=loggedToday(selDay);
-  h+=`<div class="card"><div class="row between"><div class="daytitle">${selDay}${doneToday?' <span class="donebadge">✓ done</span>':''}</div></div><div class="focus">${P.focus}</div></div>`;
+  h+=`<div class="card"><div class="row between"><div class="daytitle">${selDay}${doneToday?' <span class="donebadge">✓ done</span>':''}</div></div><div class="focus">${P.focus}</div>${P.alt?`<div class="focus" style="color:var(--warn)">▸ ${tueVariant(w)}</div>`:''}</div>`;
   if(selDay==="Sun"){h+=`<div class="card"><div class="skill">${P.skill}</div></div>`;v.innerHTML=h;return;}
   h+=`<div class="card"><div class="exmeta" style="margin-bottom:6px;font-weight:600">▶ WARM-UP (~10 min)</div><div class="tiny">${WARMUP}</div></div>`;
   h+=`<div class="card"><div class="skill">🎯 SKILL FIRST — ${P.skill}</div>`;
   const dk=dkey(selDay);const draft=DB.draft[dk]||{};
-  P.ex.forEach((e,i)=>{
+  PEX.forEach((e,i)=>{
     const L=lastLog(selDay,e.n);
     const lh=L?`<div class="last">↳ last: ${L.load||'–'}kg · ${L.reps||'–'} · RPE ${L.rpe||'–'}</div>`:"";
     const d=draft[i]||{sets:[],load:"",rpe:""};
@@ -263,19 +276,19 @@ function tapSet(day,exi,seti){
   const dk=dkey(day);DB.draft[dk]=DB.draft[dk]||{};DB.draft[dk][exi]=DB.draft[dk][exi]||{sets:[],load:"",rpe:""};
   const cur=DB.draft[dk][exi].sets[seti];
   // cycle: empty -> prompt reps
-  const val=prompt("Reps for set "+(seti+1)+" of "+PLAN[day].ex[exi].n+(cur?" (now "+cur+")":""),cur||"");
+  const val=prompt("Reps for set "+(seti+1)+" of "+exOf(day)[exi].n+(cur?" (now "+cur+")":""),cur||"");
   if(val===null)return;
   DB.draft[dk][exi].sets[seti]=val.trim();
   save();renderTrain();
   // auto-start rest timer after logging a set
-  const e=PLAN[day].ex[exi];if(e.rest)openTimer(e.n.replace(/'/g,""),e.rest);
+  const e=exOf(day)[exi];if(e.rest)openTimer(e.n.replace(/'/g,""),e.rest);
 }
 function draftLoad(day,exi,field,val){const dk=dkey(day);DB.draft[dk]=DB.draft[dk]||{};DB.draft[dk][exi]=DB.draft[dk][exi]||{sets:[],load:"",rpe:""};DB.draft[dk][exi][field]=val.trim();save();}
 function saveDay(){
-  const P=PLAN[selDay];const dk=dkey(selDay);const draft=DB.draft[dk]||{};let n=0;
+  const P=PLAN[selDay];const PEX=exOf(selDay);const dk=dkey(selDay);const draft=DB.draft[dk]||{};let n=0;
   // remove prior logs for same date+day to allow update
   DB.logs=DB.logs.filter(l=>!(l.date===todayISO()&&l.day===selDay));
-  P.ex.forEach((e,i)=>{
+  PEX.forEach((e,i)=>{
     const d=draft[i]||{};const reps=(d.sets||[]).filter(x=>x).join("/");
     if(reps||d.load||d.rpe){DB.logs.push({date:todayISO(),week:weekNum(),day:selDay,ex:e.n,load:d.load||"",reps,rpe:d.rpe||""});n++;}
   });
@@ -319,9 +332,11 @@ function renderProgress(){
     h+=`</div>`;
   }
   h+=`<div class="card"><div class="exmeta" style="margin-bottom:6px;font-weight:600">PROGRESSION RULES</div><div class="tiny">
-    • Hit top of rep range all sets w/ ~1 in reserve → +2.5–5kg, reset to bottom.<br>
-    • Strength 5→8 · hypertrophy 8→12.<br>
-    • Skills: Grease-the-Groove, never to failure.<br>
+    • <b>Phase first:</b> W1–8 deficit = big lifts on MAINTENANCE (RIR 2–3, hold load, no PRs). W9–12 fed = push PRs.<br>
+    • Advance (fed phase): hit top of rep range all sets w/ ~1 in reserve → +2.5–5kg, reset to bottom.<br>
+    • Strength 5→8 · hypertrophy 8→12 (hypertrophy you can still nudge in deficit).<br>
+    • <b>Tue = ONE heavy axial lift:</b> odd wk squat, even wk deadlift · 1 ramp + 3 work sets, autoregulate.<br>
+    • Skills: 2 threads only (handstand + L-sit/V-sit). Press-to-HS parked till 30s free HS + solid L-sit. GTG, never to failure.<br>
     • <b>Deload W4 & W8</b> or any week reps fall while RPE hits 10.<br>
     • Max-test big lifts end of deload, 1 rest day before next block.</div></div>`;
   h+=`<button class="btn sec" onclick="exportCSV()">⬇ Export CSV backup</button>`;
@@ -336,6 +351,36 @@ function exportCSV(){
   [...keys].sort().forEach(d=>rows.push([d,DB.sleep[d]||"",DB.bw[d]||""]));
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([rows.map(r=>r.join(",")).join("\n")],{type:"text/csv"}));
   a.download="og-tracker-"+todayISO()+".csv";a.click();buzz();
+}
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(DB,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="og-tracker-backup-"+todayISO()+".json";a.click();buzz();toast("✓ Backup exported");
+}
+function importJSON(input){
+  const f=input.files&&input.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const o=JSON.parse(rd.result);
+      if(typeof o!=="object"||o===null||!("logs" in o)) throw new Error("not an OG backup");
+      const inLogs=Array.isArray(o.logs)?o.logs.length:0;
+      if(!confirm("Import backup?\n"+inLogs+" logged sets will be MERGED with your current data. Duplicates (same date+day+exercise) are replaced. This cannot be undone — export a backup first if unsure.")){input.value="";return;}
+      // merge logs by date+day+ex (imported wins)
+      const key=l=>l.date+"|"+l.day+"|"+l.ex;
+      const map=new Map();(DB.logs||[]).forEach(l=>map.set(key(l),l));(o.logs||[]).forEach(l=>map.set(key(l),l));
+      DB.logs=[...map.values()].sort((a,b)=>(a.date+a.day).localeCompare(b.date+b.day));
+      // merge dated maps + milestones (imported wins on conflict)
+      DB.sleep=Object.assign({},DB.sleep||{},o.sleep||{});
+      DB.bw=Object.assign({},DB.bw||{},o.bw||{});
+      DB.miles=Object.assign({},DB.miles||{},o.miles||{});
+      DB.draft=Object.assign({},DB.draft||{},o.draft||{});
+      if(o.start) DB.start=o.start;
+      save();buzz([20,40,20]);toast("✓ Imported & merged");renderProgress();renderTrain();
+    }catch(e){alert("Import failed: "+e.message+"\nMake sure you picked an OG Tracker JSON backup.");}
+    input.value="";
+  };
+  rd.readAsText(f);
 }
 
 // ===================== SKILLS =====================
@@ -364,13 +409,27 @@ function renderPlan(){
     <div class="macro"><span>Carbs</span><b>${MACROS.carbs}</b></div>
     <div class="tiny">${MACROS.extra}</div></div>`;
   h+=`<div class="card"><div class="exmeta" style="margin-bottom:9px;font-weight:600">12-WEEK SHAPE</div><div class="tiny">
-    <b>W1–4 Accumulation</b> — higher volume, build skill base. Deload W4.<br>
-    <b>W5–8 Intensification</b> — strength moves toward 3–5 reps heavier. Deload W8.<br>
-    <b>W9–12 Peak/Skill</b> — chase skill milestones + max-test big lifts. Reassess W12.</div></div>`;
-  ORDER.forEach(d=>{const P=PLAN[d];
+    <b>W1–4 Fat-loss</b> — ~400 kcal deficit. Big lifts on MAINTENANCE (RIR 2–3, no PRs); build handstand + L-sit base. Deload W4.<br>
+    <b>W5–8 Fat-loss</b> — deficit continues. Hold strength, keep nudging hypertrophy/skill. Deload W8.<br>
+    <b>W9–12 Fed Peak</b> — maintenance/slight surplus. NOW push big-lift PRs + skill milestones. Reassess W12.<br>
+    <b>Tue alternates:</b> odd weeks = back squat focus, even weeks = deadlift focus (one heavy axial lift/week). Fri is spine-friendly.</div></div>`;
+  ORDER.forEach(d=>{const P=PLAN[d];const PEX=P.alt?null:P.ex;
     h+=`<div class="card"><div class="daytitle">${d}</div><div class="focus">${P.focus}</div><div class="skill" style="margin-top:9px">${P.skill}</div>`;
-    P.ex.forEach(e=>h+=`<div class="ex"><div class="exname">${e.n}</div><div class="exmeta">${e.s}${e.rest?' · rest '+Math.floor(e.rest/60)+(e.rest%60?":"+String(e.rest%60).padStart(2,"0"):"m"):''}${e.note?' · '+e.note:''}</div></div>`);
+    if(P.alt){
+      h+=`<div class="mgrp">Odd weeks · squat focus</div>`;
+      P.alt.odd.forEach(e=>h+=`<div class="ex"><div class="exname">${e.n}</div><div class="exmeta">${e.s}${e.rest?' · rest '+Math.floor(e.rest/60)+(e.rest%60?":"+String(e.rest%60).padStart(2,"0"):"m"):''}${e.note?' · '+e.note:''}</div></div>`);
+      h+=`<div class="mgrp">Even weeks · deadlift focus</div>`;
+      P.alt.even.forEach(e=>h+=`<div class="ex"><div class="exname">${e.n}</div><div class="exmeta">${e.s}${e.rest?' · rest '+Math.floor(e.rest/60)+(e.rest%60?":"+String(e.rest%60).padStart(2,"0"):"m"):''}${e.note?' · '+e.note:''}</div></div>`);
+    }else{
+      PEX.forEach(e=>h+=`<div class="ex"><div class="exname">${e.n}</div><div class="exmeta">${e.s}${e.rest?' · rest '+Math.floor(e.rest/60)+(e.rest%60?":"+String(e.rest%60).padStart(2,"0"):"m"):''}${e.note?' · '+e.note:''}</div></div>`);
+    }
     h+=`</div>`;});
+  h+=`<div class="card"><div class="exmeta" style="font-weight:600">BACKUP & RESTORE</div>
+    <div class="tiny">Your data lives on this device. Add to Home Screen (iOS) keeps it from being wiped. Export a JSON backup to iCloud/email; import it to restore or move to a new device.</div>
+    <button class="btn sec" style="margin-top:10px" onclick="exportJSON()">⬇ Export full backup (JSON)</button>
+    <button class="btn sec" style="margin-top:9px" onclick="document.getElementById('importfile').click()">⬆ Import backup (JSON)</button>
+    <input type="file" id="importfile" accept="application/json,.json" style="display:none" onchange="importJSON(this)">
+    <button class="btn sec" style="margin-top:9px" onclick="exportCSV()">⬇ Export CSV (spreadsheet)</button></div>`;
   h+=`<div class="card"><div class="exmeta" style="font-weight:600">SETTINGS</div>
     <button class="btn sec" style="margin-top:10px" onclick="resetStart()">Set today as Week 1 start</button>
     <button class="btn sec" style="margin-top:9px;color:var(--bad)" onclick="wipe()">Erase all data</button>
@@ -388,6 +447,9 @@ document.querySelectorAll(".nav div").forEach(n=>n.onclick=()=>{
   ({train:renderTrain,progress:renderProgress,skills:renderSkills,plan:renderPlan})[v]();
 });
 renderTrain();
+// ===================== PWA: service worker + storage persistence =====================
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}
+if(navigator.storage&&navigator.storage.persist){navigator.storage.persisted().then(p=>{if(!p)navigator.storage.persist();});}
 </script>
 </body>
 </html>
